@@ -1,0 +1,80 @@
+package com.example.artem.projectlost;
+
+import android.os.Bundle;
+import android.support.annotation.Nullable;
+import android.support.design.widget.TabLayout;
+import android.support.v4.app.Fragment;
+import android.support.v4.app.FragmentManager;
+import android.support.v4.app.FragmentPagerAdapter;
+import android.support.v4.view.ViewPager;
+import android.view.LayoutInflater;
+import android.view.View;
+import android.view.ViewGroup;
+
+public class TabFragment extends Fragment {
+
+    public static TabLayout tabLayout;
+    public static ViewPager viewPager;
+    public static int int_items = 4 ;
+
+    @Nullable
+    @Override
+    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+
+        View x =  inflater.inflate(R.layout.tab_layout,null);
+        tabLayout = (TabLayout) x.findViewById(R.id.tabs);
+        viewPager = (ViewPager) x.findViewById(R.id.viewpager);
+
+        viewPager.setAdapter(new MyAdapter(getChildFragmentManager()));//Используя адаптер Возвращаем private FragmentManager для размещения и управления фрагментами внутри этого фрагмента.
+
+        tabLayout.post(new Runnable() {
+            @Override
+            public void run() {
+                tabLayout.setupWithViewPager(viewPager);
+            }
+        });
+
+        return x;
+
+    }
+
+    class MyAdapter extends FragmentPagerAdapter{
+
+        public MyAdapter(FragmentManager fm) {
+            super(fm);
+        }
+
+        @Override
+        public Fragment getItem(int position)
+        {
+            switch (position){
+                case 0 : return new ElectronicsFragment();
+                case 1 : return new DocumentationFragment();
+                case 2 : return new AnimalsFragment();
+                case 3 : return new OthersFragment();
+            }
+            return null;
+        }
+
+        @Override
+        public int getCount() {
+            return int_items;
+        }
+
+        @Override
+        public CharSequence getPageTitle(int position) {
+            switch (position){
+                case 0 :
+                    return "Electronics";
+                case 1 :
+                    return "Documentation";
+                case 2 :
+                    return "Animals";
+                case 3:
+                    return "Others";
+            }
+            return null;
+        }
+    }
+
+}

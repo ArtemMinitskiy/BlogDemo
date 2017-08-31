@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+    <item android:title="Electronics"
+        android:id="@+id/navItemEl"
+        android:icon="@drawable/ic_menu_send"/>
+
+    <item android:title="Documentation"
+        android:id="@+id/navItemDoc"
+        android:icon="@drawable/ic_menu_camera"/>
+
+    <item android:title="Animals"
+        android:id="@+id/navItemAnim"
+        android:icon="@drawable/ic_menu_gallery"/>
+
+    <item android:title="Others"
+        android:id="@+id/navItemOther"
+        android:icon="@drawable/ic_menu_gallery"/>
+
+
+    <group android:id="@+id/group_settings_id">
+
+        <item android:title="Settings"
+            android:icon="@drawable/ic_menu_slideshow"/>
+        <item android:title="Help"
+            android:icon="@drawable/ic_menu_slideshow"/>
+    </group>
+
+    <group android:id="@+id/group_exit">
+
+        <item android:title="Logout"
+            android:id="@+id/navLogOut"
+            android:icon="@drawable/ic_menu_gallery"/>
+
+    </group>
+</menu>
