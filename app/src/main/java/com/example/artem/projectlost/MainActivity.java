@@ -31,6 +31,7 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.O
     private GoogleApiClient googleApiClient;
     private FirebaseAuth firebaseAuth;
     private FirebaseAuth.AuthStateListener firebaseAuthListener;
+    View v;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -38,7 +39,7 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.O
         setContentView(R.layout.activity_main);
 
         mDrawerLayout = (DrawerLayout) findViewById(R.id.drawerLayout);
-        mNavigationView = (NavigationView) findViewById(R.id.shitstuff) ;
+        mNavigationView = (NavigationView) findViewById(R.id.shitstuff);
 
         GoogleSignInOptions gso = new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
                 .requestEmail()
@@ -74,6 +75,9 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.O
                     FragmentTransaction tfragmentTransaction = mFragmentManager.beginTransaction();
                     tfragmentTransaction.replace(R.id.containerView,new OthersFragment()).commit();
                 }
+                if (menuItem.getItemId() == R.id.navLogOut) {
+                    logOut(v);
+                }
 
 
                 return false;
@@ -107,6 +111,7 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.O
     }
 
     private void setUserData(FirebaseUser user) {
+
 //        nameTextView.setText(user.getDisplayName());
 //        emailTextView.setText(user.getEmail());
 //        idTextView.setText(user.getUid());
