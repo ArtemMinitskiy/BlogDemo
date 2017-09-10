@@ -9,10 +9,14 @@ import android.support.v4.app.FragmentTransaction;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AppCompatActivity;
+import android.util.Log;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.ImageView;
+import android.widget.TextView;
 import android.widget.Toast;
 
+import com.bumptech.glide.Glide;
 import com.google.android.gms.auth.api.Auth;
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions;
 import com.google.android.gms.common.ConnectionResult;
@@ -21,6 +25,10 @@ import com.google.android.gms.common.api.ResultCallback;
 import com.google.android.gms.common.api.Status;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
 
 public class MainActivity extends AppCompatActivity implements GoogleApiClient.OnConnectionFailedListener {
     DrawerLayout mDrawerLayout;
@@ -29,19 +37,39 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.O
     FragmentTransaction mFragmentTransaction;
 
     private GoogleApiClient googleApiClient;
-    private FirebaseAuth firebaseAuth;
+    private FirebaseAuth mFirebaseAuth;
     private FirebaseAuth.AuthStateListener firebaseAuthListener;
+    protected FirebaseUser mFirebaseUser;
     View v;
+
+    private TextView mEmail, mFullName;
+    private ImageView mImageView;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        Log.d("log", "connect");
+        mFirebaseAuth = FirebaseAuth.getInstance();
+        mFirebaseUser = FirebaseAuth.getInstance().getCurrentUser();
+
+        if (mFirebaseAuth == null){
+            Log.d("log", "mFirebaseAuth is null");
+        }
+        if (mFirebaseUser == null){
+            Log.d("log", "mFirebaseUser is null");
+        }
 
         mDrawerLayout = (DrawerLayout) findViewById(R.id.drawerLayout);
         mNavigationView = (NavigationView) findViewById(R.id.shitstuff);
+        View navHeaderView = mNavigationView.getHeaderView(0);
+
+        mEmail = (TextView) navHeaderView.findViewById(R.id.email);
+        mFullName = (TextView) navHeaderView.findViewById(R.id.fullName);
+        mImageView = (ImageView) navHeaderView.findViewById(R.id.imageView);
 
         GoogleSignInOptions gso = new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
+                .requestIdToken(getString(R.string.web_client_id))
                 .requestEmail()
                 .build();
 
@@ -52,28 +80,16 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.O
 
         mFragmentManager = getSupportFragmentManager();
         mFragmentTransaction = mFragmentManager.beginTransaction();
-        mFragmentTransaction.replace(R.id.containerView,new TabFragment()).commit();
+        mFragmentTransaction.replace(R.id.containerView,new MainFragment()).commit();
 
         mNavigationView.setNavigationItemSelectedListener(new NavigationView.OnNavigationItemSelectedListener() {
             @Override
             public boolean onNavigationItemSelected(MenuItem menuItem) {
                 mDrawerLayout.closeDrawers();
 
-                if (menuItem.getItemId() == R.id.navItemEl) {
+                if (menuItem.getItemId() == R.id.navItemLAF) {
                     FragmentTransaction tfragmentTransaction = mFragmentManager.beginTransaction();
-                    tfragmentTransaction.replace(R.id.containerView,new TabFragment()).commit();
-                }
-                if (menuItem.getItemId() == R.id.navItemDoc) {
-                    FragmentTransaction tfragmentTransaction = mFragmentManager.beginTransaction();
-                    tfragmentTransaction.replace(R.id.containerView,new DocumentationFragment()).commit();
-                }
-                if (menuItem.getItemId() == R.id.navItemAnim) {
-                    FragmentTransaction tfragmentTransaction = mFragmentManager.beginTransaction();
-                    tfragmentTransaction.replace(R.id.containerView,new AnimalsFragment()).commit();
-                }
-                if (menuItem.getItemId() == R.id.navItemOther) {
-                    FragmentTransaction tfragmentTransaction = mFragmentManager.beginTransaction();
-                    tfragmentTransaction.replace(R.id.containerView,new OthersFragment()).commit();
+                    tfragmentTransaction.replace(R.id.containerView,new MainFragment()).commit();
                 }
                 if (menuItem.getItemId() == R.id.navLogOut) {
                     logOut(v);
@@ -91,7 +107,32 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.O
         mDrawerLayout.setDrawerListener(mDrawerToggle);
         mDrawerToggle.syncState();
 
-        firebaseAuth = FirebaseAuth.getInstance();
+
+
+
+        FirebaseDatabase.getInstance().getReference("users").child(mFirebaseUser.getEmail().replace(".", ","))
+                .addListenerForSingleValueEvent(new ValueEventListener() {
+                    @Override
+                    public void onDataChange(DataSnapshot dataSnapshot) {
+                        if (mImageView == null){
+                            Log.d("log", "imageView is null");
+                        }
+                            Users users = dataSnapshot.getValue(Users.class);
+                            Glide.with(MainActivity.this)
+                                    .load(users.getPhotoUrl())
+                                    .into(mImageView);
+                        Log.d("log", "imageView " + users.getPhotoUrl());
+                            mFullName.setText(users.getUser());
+                            mEmail.setText(users.getEmail());
+                    }
+
+                    @Override
+                    public void onCancelled(DatabaseError databaseError) {
+
+                    }
+                });
+
+
         firebaseAuthListener = new FirebaseAuth.AuthStateListener() {
             @Override
             public void onAuthStateChanged(@NonNull FirebaseAuth firebaseAuth) {
@@ -122,7 +163,7 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.O
     protected void onStart() {
         super.onStart();
 
-        firebaseAuth.addAuthStateListener(firebaseAuthListener);
+        mFirebaseAuth.addAuthStateListener(firebaseAuthListener);
     }
 
     private void goLogInScreen() {
@@ -132,7 +173,7 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.O
     }
 
     public void logOut(View view) {
-        firebaseAuth.signOut();
+        mFirebaseAuth.signOut();
 
         Auth.GoogleSignInApi.signOut(googleApiClient).setResultCallback(new ResultCallback<Status>() {
             @Override
@@ -151,7 +192,7 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.O
         super.onStop();
 
         if (firebaseAuthListener != null) {
-            firebaseAuth.removeAuthStateListener(firebaseAuthListener);
+            mFirebaseAuth.removeAuthStateListener(firebaseAuthListener);
         }
     }
 }

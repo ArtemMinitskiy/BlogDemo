@@ -14,7 +14,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 
-public class ElectronicsFragment extends Fragment {
+public class MainFragment extends Fragment {
     private RecyclerView recyclerView;
     private RecyclerAdapter adapter;
     private List<RecyclerItem> listItems;
@@ -22,7 +22,7 @@ public class ElectronicsFragment extends Fragment {
     @Nullable
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-        View v = inflater.inflate(R.layout.electronics_layout,null);
+        View v = inflater.inflate(R.layout.main_layout,null);
         recyclerView = (RecyclerView) v.findViewById(R.id.recyclerView);
 
         recyclerView.setHasFixedSize(true);

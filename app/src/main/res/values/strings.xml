@@ -1,3 +1,5 @@
 <resources>
     <string name="app_name">Lost and Found</string>
+    <string name="web_client_id">694430362914-11d6n0vt23mlof5h8land0qpghed0dh6.apps.googleusercontent.com</string>
+    <string name="title_activity_info">InfoActivity</string>
 </resources>

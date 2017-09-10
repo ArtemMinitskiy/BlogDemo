@@ -23,6 +23,9 @@ import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.auth.GoogleAuthProvider;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
 
 public class SignInActivity extends AppCompatActivity implements GoogleApiClient.OnConnectionFailedListener {
 
@@ -111,24 +114,39 @@ public class SignInActivity extends AppCompatActivity implements GoogleApiClient
         }
     }
 
-    private void firebaseAuthWithGoogle(GoogleSignInAccount signInAccount) {
+    private void firebaseAuthWithGoogle(final GoogleSignInAccount account) {
 
         progressBar.setVisibility(View.VISIBLE);
         signInButton.setVisibility(View.GONE);
 
-        AuthCredential credential = GoogleAuthProvider.getCredential(signInAccount.getIdToken(), null);
+        AuthCredential credential = GoogleAuthProvider.getCredential(account.getIdToken(), null);
         firebaseAuth.signInWithCredential(credential).addOnCompleteListener(this, new OnCompleteListener<AuthResult>() {
             @Override
             public void onComplete(@NonNull Task<AuthResult> task) {
-
                 progressBar.setVisibility(View.GONE);
                 signInButton.setVisibility(View.VISIBLE);
 
-                if (!task.isSuccessful()) {
-                    Toast.makeText(getApplicationContext(), "not firebase auth", Toast.LENGTH_SHORT).show();
-                }
+//                Users user = new Users(
+//                        account.getDisplayName() + " " + account.getFamilyName(),
+//                        account.getEmail(),
+//                        account.getPhotoUrl().toString(),
+//                        FirebaseAuth.getInstance().getCurrentUser().getUid()
+//                );
+
+//                FirebaseDatabase database = FirebaseDatabase.getInstance();
+//                DatabaseReference userRef = database.getReference("users");
+//                userRef.child(account.getEmail().replace(".", ","))
+//                        .setValue(user, new DatabaseReference.CompletionListener() {
+//                            @Override
+//                            public void onComplete(DatabaseError databaseError, DatabaseReference databaseReference) {
+//                                Log.v("Log", "onComplete Set vaLUE");
+//                                startActivity(new Intent(SignInActivity.this, MainActivity.class));
+//                            }
+//                        });
+
             }
-        });
+
+    });
     }
 
     private void goMainScreen() {
