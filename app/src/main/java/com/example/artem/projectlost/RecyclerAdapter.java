@@ -10,6 +10,8 @@ import android.view.ViewGroup;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.firebase.ui.database.FirebaseRecyclerAdapter;
+
 import java.util.List;
 
 public class RecyclerAdapter extends RecyclerView.Adapter<RecyclerAdapter.ViewHolder> {
@@ -31,14 +33,13 @@ public class RecyclerAdapter extends RecyclerView.Adapter<RecyclerAdapter.ViewHo
         final Context context ;
         context = holder.itemView.getContext();
         final RecyclerItem itemList = listItems.get(position);
-        holder.txtTitle.setText(itemList.getTitle());
-        holder.txtDescription.setText(itemList.getDescription());
-        holder.txtOptionDigit.setOnClickListener(new View.OnClickListener() {
+        holder.nameText.setText(itemList.getName());
+        holder.describeText.setText(itemList.getDescribe());
+        holder.optionText.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 //Display option menu
-
-                PopupMenu popupMenu = new PopupMenu(context, holder.txtOptionDigit);
+                PopupMenu popupMenu = new PopupMenu(context, holder.optionText);
                 popupMenu.inflate(R.menu.option_menu);
                 popupMenu.setOnMenuItemClickListener(new PopupMenu.OnMenuItemClickListener() {
                     @Override
@@ -72,14 +73,14 @@ public class RecyclerAdapter extends RecyclerView.Adapter<RecyclerAdapter.ViewHo
 
     public class ViewHolder extends RecyclerView.ViewHolder{
 
-        public TextView txtTitle;
-        public TextView txtDescription;
-        public TextView txtOptionDigit;
+        public TextView nameText;
+        public TextView describeText;
+        public TextView optionText;
         public ViewHolder(View itemView) {
             super(itemView);
-            txtTitle = (TextView) itemView.findViewById(R.id.txtTitle);
-            txtDescription = (TextView) itemView.findViewById(R.id.txtDescription);
-            txtOptionDigit = (TextView) itemView.findViewById(R.id.txtOptionDigit);
+            nameText = (TextView) itemView.findViewById(R.id.nameText);
+            describeText = (TextView) itemView.findViewById(R.id.describeText);
+            optionText = (TextView) itemView.findViewById(R.id.optionText);
         }
     }
 }

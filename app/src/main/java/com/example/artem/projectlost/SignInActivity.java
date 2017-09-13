@@ -126,27 +126,9 @@ public class SignInActivity extends AppCompatActivity implements GoogleApiClient
                 progressBar.setVisibility(View.GONE);
                 signInButton.setVisibility(View.VISIBLE);
 
-//                Users user = new Users(
-//                        account.getDisplayName() + " " + account.getFamilyName(),
-//                        account.getEmail(),
-//                        account.getPhotoUrl().toString(),
-//                        FirebaseAuth.getInstance().getCurrentUser().getUid()
-//                );
-
-//                FirebaseDatabase database = FirebaseDatabase.getInstance();
-//                DatabaseReference userRef = database.getReference("users");
-//                userRef.child(account.getEmail().replace(".", ","))
-//                        .setValue(user, new DatabaseReference.CompletionListener() {
-//                            @Override
-//                            public void onComplete(DatabaseError databaseError, DatabaseReference databaseReference) {
-//                                Log.v("Log", "onComplete Set vaLUE");
-//                                startActivity(new Intent(SignInActivity.this, MainActivity.class));
-//                            }
-//                        });
-
             }
 
-    });
+        });
     }
 
     private void goMainScreen() {

@@ -1,14 +1,15 @@
 package com.example.artem.projectlost;
 
+import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.design.widget.NavigationView;
-import android.support.v4.app.FragmentManager;
-import android.support.v4.app.FragmentTransaction;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.LinearLayoutManager;
+import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.view.MenuItem;
 import android.view.View;
@@ -30,17 +31,23 @@ import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 
+import java.util.ArrayList;
+import java.util.List;
+
 public class MainActivity extends AppCompatActivity implements GoogleApiClient.OnConnectionFailedListener {
     DrawerLayout mDrawerLayout;
     NavigationView mNavigationView;
-    FragmentManager mFragmentManager;
-    FragmentTransaction mFragmentTransaction;
 
     private GoogleApiClient googleApiClient;
     private FirebaseAuth mFirebaseAuth;
     private FirebaseAuth.AuthStateListener firebaseAuthListener;
     protected FirebaseUser mFirebaseUser;
-    View v;
+    private View v;
+
+    private RecyclerView recyclerView;
+    private RecyclerAdapter adapter;
+    private List<RecyclerItem> listItems;
+    private Context context;
 
     private TextView mEmail, mFullName;
     private ImageView mImageView;
@@ -49,16 +56,10 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.O
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        Log.d("log", "connect");
+        adapterView();
+
         mFirebaseAuth = FirebaseAuth.getInstance();
         mFirebaseUser = FirebaseAuth.getInstance().getCurrentUser();
-
-        if (mFirebaseAuth == null){
-            Log.d("log", "mFirebaseAuth is null");
-        }
-        if (mFirebaseUser == null){
-            Log.d("log", "mFirebaseUser is null");
-        }
 
         mDrawerLayout = (DrawerLayout) findViewById(R.id.drawerLayout);
         mNavigationView = (NavigationView) findViewById(R.id.shitstuff);
@@ -78,23 +79,14 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.O
                 .addApi(Auth.GOOGLE_SIGN_IN_API, gso)
                 .build();
 
-        mFragmentManager = getSupportFragmentManager();
-        mFragmentTransaction = mFragmentManager.beginTransaction();
-        mFragmentTransaction.replace(R.id.containerView,new MainFragment()).commit();
-
         mNavigationView.setNavigationItemSelectedListener(new NavigationView.OnNavigationItemSelectedListener() {
             @Override
             public boolean onNavigationItemSelected(MenuItem menuItem) {
                 mDrawerLayout.closeDrawers();
 
-                if (menuItem.getItemId() == R.id.navItemLAF) {
-                    FragmentTransaction tfragmentTransaction = mFragmentManager.beginTransaction();
-                    tfragmentTransaction.replace(R.id.containerView,new MainFragment()).commit();
-                }
                 if (menuItem.getItemId() == R.id.navLogOut) {
                     logOut(v);
                 }
-
 
                 return false;
             }
@@ -102,43 +94,16 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.O
         });
 
         android.support.v7.widget.Toolbar toolbar = (android.support.v7.widget.Toolbar) findViewById(R.id.toolbar);
-        ActionBarDrawerToggle mDrawerToggle = new ActionBarDrawerToggle(this,mDrawerLayout, toolbar,R.string.app_name,
-                R.string.app_name);
+        ActionBarDrawerToggle mDrawerToggle = new ActionBarDrawerToggle(this,mDrawerLayout, toolbar,R.string.app_name, R.string.app_name);
         mDrawerLayout.setDrawerListener(mDrawerToggle);
         mDrawerToggle.syncState();
-
-
-
-
-        FirebaseDatabase.getInstance().getReference("users").child(mFirebaseUser.getEmail().replace(".", ","))
-                .addListenerForSingleValueEvent(new ValueEventListener() {
-                    @Override
-                    public void onDataChange(DataSnapshot dataSnapshot) {
-                        if (mImageView == null){
-                            Log.d("log", "imageView is null");
-                        }
-                            Users users = dataSnapshot.getValue(Users.class);
-                            Glide.with(MainActivity.this)
-                                    .load(users.getPhotoUrl())
-                                    .into(mImageView);
-                        Log.d("log", "imageView " + users.getPhotoUrl());
-                            mFullName.setText(users.getUser());
-                            mEmail.setText(users.getEmail());
-                    }
-
-                    @Override
-                    public void onCancelled(DatabaseError databaseError) {
-
-                    }
-                });
-
 
         firebaseAuthListener = new FirebaseAuth.AuthStateListener() {
             @Override
             public void onAuthStateChanged(@NonNull FirebaseAuth firebaseAuth) {
                 FirebaseUser user = firebaseAuth.getCurrentUser();
                 if (user != null) {
-                    setUserData(user);
+                    getAccountDetails();
                 } else {
                     goLogInScreen();
                 }
@@ -151,12 +116,22 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.O
 
     }
 
-    private void setUserData(FirebaseUser user) {
+    private void getAccountDetails(){
+        FirebaseDatabase.getInstance().getReference("users").child(mFirebaseUser.getEmail().replace(".", ","))
+                .addListenerForSingleValueEvent(new ValueEventListener() {
+                    @Override
+                    public void onDataChange(DataSnapshot dataSnapshot) {
+                        Users users = dataSnapshot.getValue(Users.class);
+                        Glide.with(MainActivity.this).load(mFirebaseUser.getPhotoUrl()).into(mImageView);
+                        mFullName.setText(users.getUser());
+                        mEmail.setText(users.getEmail());
+                    }
 
-//        nameTextView.setText(user.getDisplayName());
-//        emailTextView.setText(user.getEmail());
-//        idTextView.setText(user.getUid());
-//        Glide.with(this).load(user.getPhotoUrl()).into(photoImageView);
+                    @Override
+                    public void onCancelled(DatabaseError databaseError) {
+
+                    }
+                });
     }
 
     @Override
@@ -194,5 +169,25 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.O
         if (firebaseAuthListener != null) {
             mFirebaseAuth.removeAuthStateListener(firebaseAuthListener);
         }
+    }
+
+    public void transitionInfo(View view){
+        Intent intent = new Intent(this, InfoActivity.class);
+        startActivity(intent);
+    }
+
+    private void adapterView(){
+        recyclerView = (RecyclerView) findViewById(R.id.recyclerView);
+
+        recyclerView.setHasFixedSize(true);
+        recyclerView.setLayoutManager(new LinearLayoutManager(context));
+        listItems = new ArrayList<>();
+
+        for (int i = 0; i < 10; i++) {
+            listItems.add(new RecyclerItem("Item " + (i + 1), " " + (i+1)));
+        }
+
+        adapter = new RecyclerAdapter(listItems);
+        recyclerView.setAdapter(adapter);
     }
 }
