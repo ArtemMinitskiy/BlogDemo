@@ -15,10 +15,16 @@ import android.support.v4.app.ActivityCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.View;
+import android.widget.Button;
+import android.widget.EditText;
 import android.widget.ImageView;
 
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.storage.FileDownloadTask;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.OnProgressListener;
@@ -34,18 +40,26 @@ import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 
-public class InfoActivity extends AppCompatActivity implements View.OnClickListener {
+public class InfoActivity extends AppCompatActivity {
 
     private ImageView mImageView;
     private FloatingActionButton mAddFAB;
+    private EditText describeText;
+    private Button mLoadBtn;
+
     private File mTempPhoto;
     private String mImageUri = "";
     private String mRereference = "";
 
+    private DatabaseReference myRef;
+    private FirebaseUser user;
+    private FirebaseAuth mAuth;
+    private StorageReference mStorageRef;
+
+
+
     private static final int REQUEST_CODE_PERMISSION_RECEIVE_CAMERA = 102;
     private static final int REQUEST_CODE_TAKE_PHOTO = 103;
-
-    private StorageReference mStorageRef;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -53,13 +67,34 @@ public class InfoActivity extends AppCompatActivity implements View.OnClickListe
         setContentView(R.layout.activity_info);
 
         mImageView = (ImageView) findViewById(R.id.imageView2);
-        mAddFAB = (FloatingActionButton) findViewById(R.id.fab);
+        describeText = (EditText) findViewById(R.id.describeText);
+        mAddFAB = (FloatingActionButton) findViewById(R.id.fabPhoto);
+        mLoadBtn = (Button) findViewById(R.id.loadBtn);
 
-        mAddFAB.setOnClickListener(this);
+        user = mAuth.getInstance().getCurrentUser();
+        myRef = FirebaseDatabase.getInstance().getReference("users");
+
+        mAddFAB.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                addPhoto();
+
+            }
+        });
+
+        mLoadBtn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                myRef.child(user.getEmail().replace(".", ",")).child("message").push().setValue(describeText.getText().toString());
+                Intent intent = new Intent(InfoActivity.this, MainActivity.class);
+                startActivity(intent);
+            }
+        });
+
 
         File mLocalFile = null;
 
-        mRereference = getIntent().getStringExtra("Reference");
+//        mRereference = getIntent().getStringExtra("Reference");
         mStorageRef = FirebaseStorage.getInstance().getReference();
 
         try {
@@ -184,13 +219,6 @@ public class InfoActivity extends AppCompatActivity implements View.OnClickListe
             list.add(targetedIntent);
         }
         return list;
-    }
-
-    @Override
-    public void onClick(View v) {
-        if(v.getId() == R.id.fab){
-            addPhoto();
-        }
     }
 
     @Override

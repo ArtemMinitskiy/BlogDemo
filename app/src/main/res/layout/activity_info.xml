@@ -7,7 +7,7 @@
     tools:context="com.example.artem.projectlost.InfoActivity">
 
     <android.support.design.widget.FloatingActionButton
-        android:id="@+id/fab"
+        android:id="@+id/fabPhoto"
         android:layout_width="250dp"
         android:layout_height="300dp"
         android:layout_gravity="bottom|end"
@@ -25,7 +25,7 @@
         android:layout_marginTop="21dp"
         android:ems="10"
         android:inputType="textPersonName"
-        android:text="Describe" />
+        android:text="Message" />
 
     <ImageView
         android:id="@+id/imageView2"
@@ -35,6 +35,12 @@
         android:layout_below="@+id/describeText"
         android:layout_marginTop="13dp"
         app:srcCompat="@drawable/common_full_open_on_phone" />
+    <Button
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:id="@+id/loadBtn"
+        android:layout_below="@+id/imageView2"
+        android:text="Load"/>
 
 
 </RelativeLayout>

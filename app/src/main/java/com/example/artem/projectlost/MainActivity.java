@@ -1,6 +1,5 @@
 package com.example.artem.projectlost;
 
-import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
@@ -18,6 +17,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.bumptech.glide.Glide;
+import com.firebase.ui.database.FirebaseRecyclerAdapter;
 import com.google.android.gms.auth.api.Auth;
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions;
 import com.google.android.gms.common.ConnectionResult;
@@ -28,11 +28,9 @@ import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
-
-import java.util.ArrayList;
-import java.util.List;
 
 public class MainActivity extends AppCompatActivity implements GoogleApiClient.OnConnectionFailedListener {
     DrawerLayout mDrawerLayout;
@@ -43,23 +41,24 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.O
     private FirebaseAuth.AuthStateListener firebaseAuthListener;
     protected FirebaseUser mFirebaseUser;
     private View v;
+    private DatabaseReference mRef;
+    FirebaseUser user = mFirebaseAuth.getInstance().getCurrentUser();
 
     private RecyclerView recyclerView;
-    private RecyclerAdapter adapter;
-    private List<RecyclerItem> listItems;
-    private Context context;
 
-    private TextView mEmail, mFullName;
-    private ImageView mImageView;
+    private TextView mEmail, mFullName, mNameText;
+    private ImageView mImageView, mainImage;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        adapterView();
 
         mFirebaseAuth = FirebaseAuth.getInstance();
         mFirebaseUser = FirebaseAuth.getInstance().getCurrentUser();
+        mRef = FirebaseDatabase.getInstance().getReference();
+
+        adapterView();
 
         mDrawerLayout = (DrawerLayout) findViewById(R.id.drawerLayout);
         mNavigationView = (NavigationView) findViewById(R.id.shitstuff);
@@ -67,7 +66,9 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.O
 
         mEmail = (TextView) navHeaderView.findViewById(R.id.email);
         mFullName = (TextView) navHeaderView.findViewById(R.id.fullName);
+        mNameText = (TextView) navHeaderView.findViewById(R.id.nameText);
         mImageView = (ImageView) navHeaderView.findViewById(R.id.imageView);
+        mainImage = (ImageView) navHeaderView.findViewById(R.id.mainImage);
 
         GoogleSignInOptions gso = new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
                 .requestIdToken(getString(R.string.web_client_id))
@@ -179,15 +180,42 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.O
     private void adapterView(){
         recyclerView = (RecyclerView) findViewById(R.id.recyclerView);
 
+        FirebaseRecyclerAdapter<String, ViewHolder> adapter;
         recyclerView.setHasFixedSize(true);
-        recyclerView.setLayoutManager(new LinearLayoutManager(context));
-        listItems = new ArrayList<>();
+        recyclerView.setLayoutManager(new LinearLayoutManager(this));
 
-        for (int i = 0; i < 10; i++) {
-            listItems.add(new RecyclerItem("Item " + (i + 1), " " + (i+1)));
-        }
+        adapter = new FirebaseRecyclerAdapter<String, ViewHolder>(
+                String.class,
+                R.layout.card_item,
+                ViewHolder.class,
+                mRef.child("users").child(user.getEmail().replace(".", ",")).child("message")
+        ) {
+            @Override
+            protected void populateViewHolder(final ViewHolder viewHolder, String item, final int position) {
+                viewHolder.describeText.setText(item);
+                Glide.with(MainActivity.this).load(user.getPhotoUrl()).into(viewHolder.userImage);
 
-        adapter = new RecyclerAdapter(listItems);
+            }
+        };
+
         recyclerView.setAdapter(adapter);
+
+    }
+
+    public static class ViewHolder extends RecyclerView.ViewHolder{
+
+        public TextView nameText;
+        public TextView describeText;
+        public TextView optionText;
+        public ImageView userImage;
+        public ImageView mainImage;
+        public ViewHolder(View itemView) {
+            super(itemView);
+            nameText = (TextView) itemView.findViewById(R.id.nameText);
+            describeText = (TextView) itemView.findViewById(R.id.describeText);
+            optionText = (TextView) itemView.findViewById(R.id.optionText);
+            userImage = (ImageView) itemView.findViewById(R.id.userImage);
+            mainImage = (ImageView) itemView.findViewById(R.id.mainImage);
+        }
     }
 }

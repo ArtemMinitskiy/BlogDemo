@@ -19,7 +19,7 @@
         android:id="@+id/textView"
         android:layout_centerHorizontal="true"
         android:textColor="@android:color/holo_blue_dark"
-        android:text="Lost and Found"/>
+        android:text="Blog"/>
 
     <com.google.android.gms.common.SignInButton
         android:id="@+id/signInButton"

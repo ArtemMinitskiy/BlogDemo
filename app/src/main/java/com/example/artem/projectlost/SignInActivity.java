@@ -123,11 +123,25 @@ public class SignInActivity extends AppCompatActivity implements GoogleApiClient
         firebaseAuth.signInWithCredential(credential).addOnCompleteListener(this, new OnCompleteListener<AuthResult>() {
             @Override
             public void onComplete(@NonNull Task<AuthResult> task) {
+
+                    Users user = new Users(
+                            account.getDisplayName(),
+//                            account.getDisplayName() + " " + account.getFamilyName(),
+                            account.getEmail(),
+                            account.getPhotoUrl().toString(),
+                            FirebaseAuth.getInstance().getCurrentUser().getUid()
+                    );
+                    FirebaseDatabase database = FirebaseDatabase.getInstance();
+                    DatabaseReference userRef = database.getReference("users");
+                    userRef.child(account.getEmail().replace(".", ",")).setValue(user, new DatabaseReference.CompletionListener() {
+                                @Override
+                                public void onComplete(DatabaseError databaseError, DatabaseReference databaseReference) {
+                                }
+                            });
                 progressBar.setVisibility(View.GONE);
                 signInButton.setVisibility(View.VISIBLE);
 
             }
-
         });
     }
 
